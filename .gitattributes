@@ -1,0 +1,13 @@
+* text=auto
+
+*.java text
+*.md text
+
+*.bat text eol=crlf
+
+gradlew text eol=lf
+*.sh text eol=lf
+*.log text eol=lf
+
+
+*.jar binary

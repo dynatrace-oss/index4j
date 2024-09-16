@@ -1,0 +1,148 @@
+import com.diffplug.gradle.spotless.JavaExtension
+
+plugins {
+	id 'groovy-gradle-plugin'
+	id 'java-library'
+	id "me.champeau.jmh" version "0.6.6"
+	id 'com.diffplug.spotless' version '6.25.0'
+	id 'jacoco'
+	id 'maven-publish'
+	id 'checkstyle'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'it.unimi.dsi:sux4j:5.4.1'
+	implementation 'com.carrotsearch:jsuffixarrays:0.1.0'
+	implementation 'org.apache.commons:commons-text:1.9'
+
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+	testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.23.1'
+	testImplementation 'org.apache.commons:commons-text:1.9'
+}
+
+spotless {
+
+	lineEndings 'UNIX'
+	def googleJavaFormatVersion = '1.19.2'
+	def greclipseVersion = '4.29'
+
+	ratchetFrom 'origin/main'
+	apply plugin: 'groovy'
+	groovyGradle {
+		target '*.gradle' // default target of groovyGradle
+		greclipse(greclipseVersion)
+	}
+	java {
+		importOrder()
+		removeUnusedImports()
+		googleJavaFormat(googleJavaFormatVersion).aosp()
+		licenseHeader readJavaLicense(rootDir, 'APACHE_2_0_DYNATRACE')
+		targetExclude   \
+              'src/main/java/com/dynatrace/wavelet/WaveletFixedBlockBoosting.java'
+	}
+	format 'javaWaveletFixedBlockBoosting', JavaExtension, {
+		importOrder()
+		removeUnusedImports()
+		googleJavaFormat(googleJavaFormatVersion).aosp()
+		licenseHeader readJavaLicense(rootDir, 'APACHE_2_0_DYNATRACE') + '\n\n' + readJavaLicense(rootDir, 'MIT_WAVELETFIXEDBLOCKBOOSTING')
+		target 'src/main/java/com/dynatrace/wavelet/WaveletFixedBlockBoosting.java'
+	}
+}
+
+jacocoTestReport {
+
+	dependsOn test
+
+	reports {
+		xml.required = true
+		csv.required = true
+	}
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			limit {
+				minimum = 1.0
+				counter = 'LINE'
+			}
+			limit {
+				minimum = 1.0
+				counter = 'BRANCH'
+			}
+		}
+	}
+}
+
+checkstyle {
+	// assign the latest checkstyle version explicitly
+	// default version is very old, likes 5.9
+	toolVersion = '10.18.1'
+	// checkstyle.xml copy from:
+	// https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-8.6/src/main/resources/google_checks.xml
+	// the version should be as same as plugin version
+	configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+jmhJar {
+	zip64 true
+	archiveFileName.set('benchmarks.jar')
+	// Needed so log4j works within the shaded jmh jar
+	exclude "**/Log4j2Plugins.dat"
+}
+
+
+test {
+	useJUnitPlatform()
+}
+
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(17))
+	}
+}
+
+jar {
+	archiveBaseName.set('research-succinct-ds')
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			groupId = 'com.dynatrace.research'
+			artifactId = 'succinct-ds'
+			from components.java
+		}
+	}
+}
+
+tasks.withType(PublishToMavenLocal) {
+	doFirst {
+		println "Publishing '${publication.name}' to maven local with the following artifacts:"
+		publication.artifacts.each { artifact -> println("      ${artifact.file}") }
+	}
+}
+
+static def readJavaLicense(file, licenseName) {
+	File licenseFile = new File(file.toString() + '/indices/licenses/' + licenseName + '.txt')
+	def line
+	def s = '/*\n'
+	licenseFile.withReader { reader ->
+		while ((line = reader.readLine()) != null) {
+			s += ' *'
+			if (!line.isEmpty()) {
+				s += ' '
+				s += line
+			}
+			s += '\n'
+		}
+	}
+	s += ' */'
+	return s
+}
