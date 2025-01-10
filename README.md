@@ -1,5 +1,9 @@
 # index4j
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Maven Central Version](https://img.shields.io/maven-central/v/com.dynatrace.index4j/indices)](https://central.sonatype.com/artifact/com.dynatrace.index4j/indices)
+[![javadoc](https://javadoc.io/badge2/com.dynatrace.index4j/indices/javadoc.svg)](https://javadoc.io/doc/com.dynatrace.index4j/indices)
+
 This repository is a Java library developed by Dynatrace that implements the FM-Index succinct data structure. The FM-Index takes 
 advantage of the relationship between the suffix array and the Burrows-Wheeler transform to enable both compression and
 fast queries. 
@@ -23,7 +27,21 @@ In addition, this repository also contains further data structures for working w
 
 ## First steps
 
-TODO add dependency on maven
+To add a dependency on `index4j` using Maven, use the following:
+
+```
+<dependency>
+    <groupId>com.dynatrace.index4j</groupId>
+    <artifactId>indices</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
+To add the dependency using Gradle:
+
+```
+implementation group: 'com.dynatrace.index4j', name: 'indices', version: '0.1.0'
+```
 
 ## Supported data structures
 

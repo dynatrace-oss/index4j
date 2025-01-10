@@ -1,0 +1,28 @@
+plugins {
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
+    id 'signing'
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.sonarqube' version '6.0.1.5171'
+}
+
+sonarqube {
+    properties {
+        property 'sonar.projectKey', 'dynatrace-oss_index4j'
+        property 'sonar.organization', 'dynatrace-oss'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+    }
+}
+
+nexusPublishing {
+    packageGroup = 'com.dynatrace'
+    useStaging = true
+    repositories {
+        sonatype {
+            nexusUrl = uri('https://oss.sonatype.org/service/local/')
+            snapshotRepositoryUrl = uri('https://oss.sonatype.org/content/repositories/snapshots/')
+            username = System.getenv('OSSRH_USERNAME')
+            password = System.getenv('OSSRH_PASSWORD')
+        }
+    }
+}

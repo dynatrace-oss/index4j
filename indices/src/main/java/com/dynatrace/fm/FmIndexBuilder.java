@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Dynatrace LLC
+ * Copyright 2024-2025 Dynatrace LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ public final class FmIndexBuilder {
 
     private int sampleRate = 32;
     private boolean enableExtraction = true;
+
+    /** Builds a new FmIndexBuilder with a {@code sampleRate} of 32 and extraction enabled. */
+    public FmIndexBuilder() {}
 
     /**
      * Sets the sampling rate for the FM-Index. The lower the value of the sample rate, the higher

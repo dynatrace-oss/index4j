@@ -104,29 +104,61 @@ test {
 
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(17))
+		languageVersion.set(JavaLanguageVersion.of(21))
 	}
+	withSourcesJar()
+	withJavadocJar()
 }
 
 jar {
 	archiveBaseName.set('research-succinct-ds')
 }
 
+javadoc {
+	failOnError true
+	title 'index4j ' + project.version + ' API'
+}
+
+group = 'com.dynatrace.index4j'
+version = '0.1.0'
+
+gradlePlugin { automatedPublishing = false }
+
 publishing {
 	publications {
+
 		mavenJava(MavenPublication) {
-			groupId = 'com.dynatrace.research'
-			artifactId = 'succinct-ds'
 			from components.java
+			pom {
+				name = 'com.dynatrace.index4j:index4j'
+				description = 'index4j: A Dynatrace FM-Index library for Java'
+				url = 'https://github.com/dynatrace-oss/index4j'
+				licenses {
+					license {
+						name = 'The Apache License, Version 2.0'
+						url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+					}
+				}
+				developers {
+					developer {
+						id = 'Dynatrace'
+						name = 'Dynatrace LLC'
+						email = 'opensource@dynatrace.com'
+					}
+				}
+				scm {
+					connection = 'scm:git:git://github.com/dynatrace-oss/index4j.git'
+					developerConnection = 'scm:git:ssh://github.com/dynatrace-oss/index4j.git'
+					url = 'https://github.com/dynatrace-oss/index4j'
+				}
+			}
 		}
 	}
 }
 
-tasks.withType(PublishToMavenLocal) {
-	doFirst {
-		println "Publishing '${publication.name}' to maven local with the following artifacts:"
-		publication.artifacts.each { artifact -> println("      ${artifact.file}") }
-	}
+signing {
+	useInMemoryPgpKeys(System.getenv('GPG_PRIVATE_KEY'), System.getenv('GPG_PASSPHRASE'))
+	sign publishing.publications.mavenJava
 }
 
 static def readJavaLicense(file, licenseName) {

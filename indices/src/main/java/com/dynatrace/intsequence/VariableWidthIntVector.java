@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Dynatrace LLC
+ * Copyright 2024-2025 Dynatrace LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ public final class VariableWidthIntVector {
     }
 
     /**
-     * Sets the value at {@code position} with {@value} using the minimum number of bits possible.
+     * Sets the value at {@code position} with {@code value} using the minimum number of bits
+     * possible.
      *
      * @param position The absolute position in bit counts
      * @param value The value to write
@@ -85,7 +86,7 @@ public final class VariableWidthIntVector {
     }
 
     /**
-     * Sets the value at {@code position} with {@value} using the given number of bits.
+     * Sets the value at {@code position} with {@code value} using the given number of bits.
      *
      * @param position The absolute position in bit counts
      * @param value The value to write
@@ -171,6 +172,7 @@ public final class VariableWidthIntVector {
      * Serializes this object to an {@code ObjectOutput} stream.
      *
      * @param objectOutput The stream to which the object will be written
+     * @throws IOException if an I/O error occurs
      */
     public void write(ObjectOutput objectOutput) throws IOException {
         objectOutput.writeByte(SERIAL_VERSION_V0);
@@ -185,6 +187,7 @@ public final class VariableWidthIntVector {
      *
      * @param objectInput The stream from which to read from
      * @return The deserialized instance of this object
+     * @throws IOException if an I/O error occurs
      */
     public static VariableWidthIntVector read(ObjectInput objectInput) throws IOException {
         checkSerialVersion(SERIAL_VERSION_V0, objectInput.readByte());

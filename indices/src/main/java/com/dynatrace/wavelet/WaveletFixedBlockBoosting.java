@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Dynatrace LLC
+ * Copyright 2024-2025 Dynatrace LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -282,6 +282,7 @@ public final class WaveletFixedBlockBoosting {
      *
      * @param objectInput The stream from which to read from
      * @return The deserialized instance of this object
+     * @throws IOException if an I/O error occurs
      */
     public static WaveletFixedBlockBoosting read(ObjectInput objectInput) throws IOException {
         checkSerialVersion(SERIAL_VERSION_V0, objectInput.readByte());
@@ -1540,6 +1541,7 @@ public final class WaveletFixedBlockBoosting {
      * Serializes this object to an {@code ObjectOutput} stream.
      *
      * @param objectOutput The stream to which the object will be written
+     * @throws IOException if an I/O error occurs
      */
     public void write(ObjectOutput objectOutput) throws IOException {
         objectOutput.writeByte(SERIAL_VERSION_V0);

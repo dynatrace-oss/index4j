@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Dynatrace LLC
+ * Copyright 2024-2025 Dynatrace LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,17 +34,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * bits is sparse. For example, a bit sequence of size 2^31 (2,147,483,648) bits stored with a
  * sample rate of 256 requires the following amount of bits depending on the sparseness:
  *
+ * <p>
+ *
  * <table border="1">
- *   <tr align="center">
+ *   <caption>Compression ratio by number of bits set and size</caption>
+ *   <tr style = "text-align: center;">
  *     <td>Number of set bits </td> <td>Size in bits</td> <td>Compression ratio</td>
  *   </tr>
- *   <tr align="right">
+ *   <tr style = "text-align: right;">
  *     <td>1%</td> <td>809,837,056</td><td>2.65x</td>
  *   </tr>
- *   <tr align="right">
+ *   <tr style = "text-align: right;">
  *     <td>5%</td> <td>1,063,113,216</td><td>2.01x</td>
  *  </tr>
- *  <tr align="right">
+ *  <tr style = "text-align: right;">
  *     <td>10%</td> <td>1,353,711,936</td><td>1.58x</td>
  *  </tr>
  * </table>
@@ -426,6 +429,7 @@ public final class RrrVector {
      * Serializes this object to an {@code ObjectOutput} stream.
      *
      * @param objectOutput The stream to which the object will be written
+     * @throws IOException if an I/O error occurs.
      */
     public void write(ObjectOutput objectOutput) throws IOException {
         objectOutput.writeByte(SERIAL_VERSION_V0);
@@ -444,6 +448,7 @@ public final class RrrVector {
      *
      * @param objectInput The stream from which to read
      * @return The deserialized instance of this object
+     * @throws IOException if an I/O error occurs.
      */
     public static RrrVector read(ObjectInput objectInput) throws IOException {
         checkSerialVersion(SERIAL_VERSION_V0, objectInput.readByte());

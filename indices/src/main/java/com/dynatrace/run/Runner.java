@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Dynatrace LLC
+ * Copyright 2024-2025 Dynatrace LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/** A simple Main class template to build and query an FM-Index. */
 public final class Runner {
 
     private Runner() {
         // Main class
     }
 
+    /**
+     * Example Main class which builds an FM-Index of the given file and sample rate and then
+     * queries the number of times the string "INFO" appears.
+     *
+     * @param args An array of size two, where the first string is the location of the input file
+     *     and the second is the sample rate for the FM-Index.
+     * @throws IOException if the file does not exist
+     * @throws IllegalArgumentException if the arguments are not correctly supplied
+     */
     public static void main(String[] args) throws IOException {
 
         if (args.length < 2) {
