@@ -1,4 +1,4 @@
-# index4j
+# <img src="plots/logo.png" alt="logo" width="50"/> index4j
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Maven Central Version](https://img.shields.io/maven-central/v/com.dynatrace.index4j/indices)](https://central.sonatype.com/artifact/com.dynatrace.index4j/indices)
