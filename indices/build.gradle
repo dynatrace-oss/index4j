@@ -105,7 +105,7 @@ test {
 
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(21))
+		languageVersion.set(JavaLanguageVersion.of(17))
 	}
 	withSourcesJar()
 	withJavadocJar()
@@ -121,7 +121,7 @@ javadoc {
 }
 
 group = 'com.dynatrace.index4j'
-version = '0.2.0'
+version = '0.3.0'
 
 gradlePlugin { automatedPublishing = false }
 

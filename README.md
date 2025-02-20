@@ -33,15 +33,17 @@ To add a dependency on `index4j` using Maven, use the following:
 <dependency>
     <groupId>com.dynatrace.index4j</groupId>
     <artifactId>indices</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
 To add the dependency using Gradle:
 
 ```
-implementation group: 'com.dynatrace.index4j', name: 'indices', version: '0.2.0'
+implementation group: 'com.dynatrace.index4j', name: 'indices', version: '0.3.0'
 ```
+
+The current minimum Java version should be 17.
 
 ## Supported data structures
 
