@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Dynatrace LLC
+ * Copyright 2024-2025 Dynatrace LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.dynatrace.serialization.Serialization;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -37,8 +39,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 public class FmIndexTest {
 
-    private final Random random = new Random(42);
     private static final int N_TESTS = 100;
+    private final Random random = new Random(42);
 
     @Test
     void shouldCount() {
@@ -373,6 +375,34 @@ public class FmIndexTest {
         }
     }
 
+    @Test
+    void shouldExtractUntilBoundarySimpleWords() {
+        String s = "grapes and cakes\n";
+        char[] text = s.toCharArray();
+        char[] pattern = "a".toCharArray();
+        int[] seed = new int[1];
+        for (int sampleRate = 1; sampleRate <= 256; sampleRate <<= 1) {
+            FmIndex fmi = new FmIndexBuilder().setSampleRate(sampleRate).build(s.toCharArray());
+            fmi.locate(pattern, 0, pattern.length, seed, 1);
+            char[] destination = new char[100];
+
+            int letters = fmi.extractUntilBoundary(seed[0], destination, 0, '\n');
+            String actual = new String(destination, 0, letters);
+            String expected = extractUntilBoundary(text, seed[0], '\n');
+            assertThat(actual).isEqualTo(expected);
+
+            letters = fmi.extractUntilBoundaryLeft(seed[0], destination, 0, '\n');
+            actual = new String(destination, 0, letters);
+            expected = extractUntilBoundaryLeft(text, seed[0], '\n');
+            assertThat(actual).isEqualTo(expected);
+
+            letters = fmi.extractUntilBoundaryRight(seed[0], destination, 0, '\n');
+            actual = new String(destination, 0, letters);
+            expected = extractUntilBoundaryRight(text, seed[0], '\n');
+            assertThat(actual).isEqualTo(expected);
+        }
+    }
+
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 14, 66})
     void shouldExtractUntilBoundaryCornerCases(int seed) {
@@ -396,6 +426,56 @@ public class FmIndexTest {
             actual = new String(destination, 0, letters);
             expected = extractUntilBoundaryRight(text, seed, '\n');
             assertThat(actual).isEqualTo(expected);
+        }
+    }
+
+    @Test
+    void shouldExtractUntilBoundaryRandomized() {
+        String s =
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
+                        + "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut "
+                        + "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse "
+                        + "cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in "
+                        + "culpa qui officia deserunt mollit anim id est laborum.";
+
+        char[] text = s.toCharArray();
+        int maxLength = 6;
+        int minLength = 1;
+        int maxMatches = 5;
+        char boundary;
+        Random rand = new Random(42);
+        for (int runs = 0; runs < 500; runs++) {
+            int randomLength = rand.nextInt((maxLength - minLength) + 1) + minLength;
+            char[] pattern = new char[randomLength];
+            // Fill the new array with random characters from the input array
+            int randomIndex = rand.nextInt(text.length - randomLength);
+            System.arraycopy(text, randomIndex, pattern, 0, randomLength);
+
+            boundary = (rand.nextDouble() < 0.5) ? ' ' : '.';
+
+            int[] seed = new int[maxMatches];
+            char[] destination = new char[text.length];
+            for (int sampleRate = 1; sampleRate <= 256; sampleRate <<= 1) {
+                FmIndex fmi = new FmIndexBuilder().setSampleRate(sampleRate).build(s.toCharArray());
+                int matches = fmi.locate(pattern, 0, pattern.length, seed, maxMatches);
+
+                for (int k = 0; k < matches; k++) {
+                    int letters = fmi.extractUntilBoundary(seed[k], destination, 0, boundary);
+                    String actual = new String(destination, 0, letters);
+                    String expected = extractUntilBoundary(text, seed[k], boundary);
+                    assertThat(actual).isEqualTo(expected);
+
+                    letters = fmi.extractUntilBoundaryLeft(seed[k], destination, 0, boundary);
+                    actual = new String(destination, 0, letters);
+                    expected = extractUntilBoundaryLeft(text, seed[k], boundary);
+                    assertThat(actual).isEqualTo(expected);
+
+                    letters = fmi.extractUntilBoundaryRight(seed[k], destination, 0, boundary);
+                    actual = new String(destination, 0, letters);
+                    expected = extractUntilBoundaryRight(text, seed[k], boundary);
+                    assertThat(actual).isEqualTo(expected);
+                }
+            }
         }
     }
 
@@ -575,5 +655,55 @@ public class FmIndexTest {
                                 + 1 // sentinel char
                         );
         assertThat(fmi.toString()).isEqualTo("FMIndex-sampleRate:32-extract:true");
+    }
+
+    @Test
+    void shouldTestExtractionWhenBoundariesAreOnTheLimit() {
+        String text = "apple\ngrape\n";
+        FmIndex fmIndex =
+                new FmIndexBuilder()
+                        .setSampleRate(32)
+                        .setEnableExtraction(true)
+                        .build(text.toCharArray());
+
+        String pattern = "ap";
+        int[] locations = new int[100];
+        int found = fmIndex.locate(pattern.toCharArray(), 0, pattern.length(), locations, 100);
+
+        List<String> results = new ArrayList<>();
+        char[] destination = new char[100];
+
+        for (int i = 0; i < found; i++) {
+            int length = fmIndex.extractUntilBoundary(locations[i], destination, 0, '\n');
+            results.add(new String(destination, 0, length));
+        }
+
+        assertThat(results.get(0)).isEqualTo("apple");
+        assertThat(results.get(1)).isEqualTo("grape");
+    }
+
+    @Test
+    void shouldTestExtractionWhenBoundariesAreMissing() {
+        String text = "apple\ngrape";
+        FmIndex fmIndex =
+                new FmIndexBuilder()
+                        .setSampleRate(32)
+                        .setEnableExtraction(true)
+                        .build(text.toCharArray());
+
+        String pattern = "ap";
+        int[] locations = new int[100];
+        int found = fmIndex.locate(pattern.toCharArray(), 0, pattern.length(), locations, 100);
+
+        List<String> results = new ArrayList<>();
+        char[] destination = new char[100];
+
+        for (int i = 0; i < found; i++) {
+            int length = fmIndex.extractUntilBoundary(locations[i], destination, 0, '\n');
+            results.add(new String(destination, 0, length));
+        }
+
+        assertThat(results.get(0)).isEqualTo("apple");
+        assertThat(results.get(1)).isEqualTo("grape");
     }
 }

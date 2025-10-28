@@ -694,6 +694,7 @@ public final class FmIndex {
         int upStreamPos;
         int finalPos = -1;
         int timesUpStream = 1;
+        int lastRemaining = 0;
         while (finalPos == -1) {
 
             int prevFrom = from;
@@ -701,7 +702,6 @@ public final class FmIndex {
             from = Math.min(from, this.length - 1);
             remaining = from - prevFrom;
             upStreamPos = (timesUpStream - 1) * step + remaining - 1;
-
             samplePosition =
                     (int) (positions.getValue((from / sampleRate) + 1, bitWidthPositions) + 1);
             skipUntilNextSampled = sampleRate - (from) % sampleRate;
@@ -709,6 +709,21 @@ public final class FmIndex {
                 skipUntilNextSampled = length - from;
             }
             distance = 0;
+
+            // this if is for the case of reaching the end of the index without finding the boundary
+            if (remaining == 0) {
+                // this can be read as follows. The length of the match is the sum of:
+                // downStreamLength: the size of the downstream, which is whatever was to the left
+                // from the match
+                // (step * (timesUpStream - 2)): how many blocks of size 'step' we explored to the
+                // right of the match
+                // lastRemaining: the last block, which might be of less size than 'step'
+                // this sum only applies when the boundary character is not included in all of the
+                // upstream remaining
+                // text (i.e., to the right of the match).
+                return downStreamLength + (step * (timesUpStream - 2)) + lastRemaining;
+            }
+
             while (remaining > 0) {
 
                 short c = (short) waveletFixedBlockBoosting.inverseSelect(samplePosition - 1);
@@ -741,20 +756,17 @@ public final class FmIndex {
                 }
                 distance++;
             }
-            // exit if we reached the end
-            if (from == this.length - 1) {
-                // If we found the EOF of the string in the first upStream segment, then when
-                // we reach here it will be -1. But if we reached here, in the worst case we
-                // only add a single char - thats where the 1 comes from. Otherwise, we add
-                // whatever upStreamPos was incremented to.
-                finalPos = (upStreamPos < 0) ? 1 : upStreamPos + from - prevFrom;
-                break;
-            }
+            lastRemaining = from - prevFrom;
 
             // update offset
             ++timesUpStream;
         }
 
+        // the length of the match is the sum of:
+        // downStreamLength: the size of the downstream, which is whatever was to the left from the
+        // match
+        // finalPos: the position in the upstream (right of the match) in which we encounter the
+        // boundary character
         return downStreamLength + finalPos;
     }
 
@@ -855,6 +867,7 @@ public final class FmIndex {
         int upStreamPos;
         int finalPos = -1;
         int timesUpStream = 1;
+        int lastRemaining = 0;
         while (finalPos == -1) {
 
             int prevFrom = from;
@@ -870,6 +883,22 @@ public final class FmIndex {
                 skipUntilNextSampled = length - from;
             }
             int distance = 0;
+
+            // this if is for the case of reaching the end of the index without finding the boundary
+            if (remaining == 0) {
+                // this can be read as follows. The length of the match is the sum of:
+                // downStreamLength: the size of the downstream, which is whatever was to the left
+                // from the match
+                // (step * (timesUpStream - 2)): how many blocks of size 'step' we explored to the
+                // right of the match
+                // lastRemaining: the last block, which might be of less size than 'step'
+                // - 1: this is just because of the semantics of the right boundary
+                // this sum only applies when the boundary character is not included in all of the
+                // upstream remaining
+                // text (i.e., to the right of the match).
+                return (step * (timesUpStream - 2)) + lastRemaining - 1;
+            }
+
             while (remaining > 0) {
 
                 short c = (short) waveletFixedBlockBoosting.inverseSelect(samplePosition - 1);
@@ -904,20 +933,16 @@ public final class FmIndex {
                 }
                 distance++;
             }
-            // exit if we reached the end
-            if (from == this.length - 1) {
-                // If we found the EOF of the string in the first upStream segment, then when
-                // we reach here it will be -1. But if we reached here, in the worst case we
-                // only add a single char - thats where the 1 comes from. Otherwise, we add
-                // whatever upStreamPos was incremented to.
-                finalPos = upStreamPos + from - prevFrom;
-                break;
-            }
+            lastRemaining = from - prevFrom;
 
             // update offset
             ++timesUpStream;
         }
 
+        // the length of the match is the sum of:
+        // finalPos: the position in the upstream (right of the match) in which we encounter the
+        // boundary character
+        // - 1: because of the semantics we take 1 off
         return finalPos - 1;
     }
 
