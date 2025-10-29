@@ -7,8 +7,12 @@ plugins {
 	id 'com.diffplug.spotless' version '6.25.0'
 	id 'jacoco'
 	id 'maven-publish'
+	id 'signing'
 	id 'checkstyle'
 }
+
+group = 'com.dynatrace.index4j'
+version = '0.3.1'
 
 repositories {
 	mavenCentral()
@@ -42,8 +46,8 @@ spotless {
 		removeUnusedImports()
 		googleJavaFormat(googleJavaFormatVersion).aosp()
 		licenseHeader readJavaLicense(rootDir, 'APACHE_2_0_DYNATRACE')
-		targetExclude   \
-              'src/main/java/com/dynatrace/wavelet/WaveletFixedBlockBoosting.java'
+		targetExclude    \
+               'src/main/java/com/dynatrace/wavelet/WaveletFixedBlockBoosting.java'
 	}
 	format 'javaWaveletFixedBlockBoosting', JavaExtension, {
 		importOrder()
@@ -115,9 +119,6 @@ javadoc {
 	title 'index4j ' + project.version + ' API'
 }
 
-group = 'com.dynatrace.index4j'
-version = '0.3.1'
-
 gradlePlugin { automatedPublishing = false }
 
 publishing {
@@ -150,6 +151,18 @@ publishing {
 			}
 		}
 	}
+	repositories {
+		maven {
+			url = "$projectDir/build/mavencentral/repo"
+		}
+	}
+}
+
+tasks.register("createRepoForUploadToMavenCentral", Zip) {
+	dependsOn build, publish
+	from "$projectDir/build/mavencentral/repo"
+	destinationDirectory = file("$projectDir/build/mavencentral")
+	archiveFileName = "repo.zip"
 }
 
 signing {

@@ -13,16 +13,3 @@ sonarqube {
         property 'sonar.host.url', 'https://sonarcloud.io'
     }
 }
-
-nexusPublishing {
-    packageGroup = 'com.dynatrace'
-    useStaging = true
-    repositories {
-        sonatype {
-            nexusUrl = uri('https://oss.sonatype.org/service/local/')
-            snapshotRepositoryUrl = uri('https://oss.sonatype.org/content/repositories/snapshots/')
-            username = System.getenv('OSSRH_USERNAME')
-            password = System.getenv('OSSRH_PASSWORD')
-        }
-    }
-}
