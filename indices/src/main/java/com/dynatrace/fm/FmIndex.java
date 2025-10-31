@@ -628,7 +628,9 @@ public final class FmIndex {
     /**
      * Extracts the original string starting from the given position until the boundary characters
      * are found, and then stores it in the given array, starting from the given offset. If the
-     * supplied destination is not large enough, an exception will be thrown.
+     * supplied destination is not large enough, an exception will be thrown. Note that the destination
+     * requires to be slightly larger than the actually extracted string. In addition, leftover chars
+     * from processing may reside outside the range [offset, offset + length] and should be ignored.
      *
      * @param from The starting position of the original string from which to extract left and right
      * @param destination The array where to store the extracted slice
@@ -774,6 +776,8 @@ public final class FmIndex {
      * Extracts the original string starting from the given position only to the left until the
      * boundary character is found, and then stores it in the given array, starting from the given
      * offset. If the supplied destination is not large enough, an exception will be thrown.
+     * In addition, leftover chars from processing may reside outside the range [offset, offset + length]
+     * and should be ignored.
      *
      * @param from The starting position of the original string from which to extract left
      * @param destination The array where to store the extracted slice
@@ -835,7 +839,7 @@ public final class FmIndex {
             distance++;
         }
 
-        // Shift the downstream to begin at 0 so that we can copy the upstream directly afterwards
+        // Shift the downstream to begin at 0
         int downStreamLength = destination.length - (downStreamPos + 1);
         System.arraycopy(destination, downStreamPos + 1, destination, offset, downStreamLength);
 
@@ -846,6 +850,8 @@ public final class FmIndex {
      * Extracts the original string starting from the given position only to the right until the
      * boundary character is found, and then stores it in the given array, starting from the given
      * offset. If the supplied destination is not large enough, an exception will be thrown.
+     * In addition, leftover chars from processing may reside outside the range [offset, offset + length]
+     * and should be ignored.
      *
      * @param from The starting position of the original string from which to extract right
      * @param destination The array where to store the extracted slice
